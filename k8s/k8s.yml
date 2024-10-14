@@ -1,0 +1,12 @@
+# Any k8s object will follow this representation
+# This are four top level items
+# Pods, Replicasets, Deployments, Services etc
+apiVersion:
+kind:
+metadata:
+spec:
+
+apiVersion: # Key & Value
+kind: # Key & Value
+metadata: # Dictionary
+spec: # Dictionary & List
