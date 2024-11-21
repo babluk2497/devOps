@@ -119,3 +119,39 @@ resource "aws_network_acl" "login-nacl" {
     Name = "login-nacl"
   }
 }
+
+# Frontend Security Group
+resource "aws_security_group" "login-fe-sg" {
+  name        = "Login FE SG"
+  description = "Allow Frontend traffic"
+  vpc_id      = aws_vpc.login-vpc.id
+
+  tags = {
+    Name = "Login-FE-SG"
+  }
+}
+
+# Frontend SSH Rule
+resource "aws_vpc_security_group_ingress_rule" "login-fe-sg-ing-ssh" {
+  security_group_id = aws_security_group.login-fe-sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 22
+  ip_protocol       = "tcp"
+  to_port           = 22
+}
+
+# Frontend HTTP Rule
+resource "aws_vpc_security_group_ingress_rule" "login-fe-sg-ing-http" {
+  security_group_id = aws_security_group.login-fe-sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  ip_protocol       = "tcp"
+  to_port           = 80
+}
+
+# Frontend Outbound
+resource "aws_vpc_security_group_egress_rule" "login-fe-sg-egg-all" {
+  security_group_id = aws_security_group.login-fe-sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1" # semantically equivalent to all ports
+}
