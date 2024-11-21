@@ -80,3 +80,9 @@ resource "aws_route_table_association" "login-fe-asc" {
   subnet_id      = aws_subnet.login-fe-sn.id
   route_table_id = aws_route_table.login-pub-rt.id
 }
+
+# Public Route Table Association
+resource "aws_route_table_association" "login-be-asc" {
+  subnet_id      = aws_subnet.login-be-sn.id
+  route_table_id = aws_route_table.login-pub-rt.id
+}
