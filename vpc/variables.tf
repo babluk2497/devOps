@@ -1,10 +1,10 @@
 #variables
-variables "aws_access_key" {
+variable "aws_access_key" {
     type = string
     description = "Enter user access key"
 }
 
-variables "aws_secret_key" {
+variable "aws_secret_key" {
     type = string
     description = "Enter user secret key"
 }
