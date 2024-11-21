@@ -1,8 +1,8 @@
-# EBS Volume
-resource "aws_ebs_volume" "vol-1" {
-  availability_zone = "us-west-2a"
-  size              = 5
+# VPC 
+resource "aws_vpc" "login-vpc" {
+  cidr_block       = "10.0.0.0/16"
+
   tags = {
-    Name = "tf-volume-1"
+    Name = "login-vpc"
   }
 }
