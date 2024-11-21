@@ -86,3 +86,9 @@ resource "aws_route_table_association" "login-be-asc" {
   subnet_id      = aws_subnet.login-be-sn.id
   route_table_id = aws_route_table.login-pub-rt.id
 }
+
+# Private Route Table Association
+resource "aws_route_table_association" "login-db-asc" {
+  subnet_id      = aws_subnet.login-db-sn.id
+  route_table_id = aws_route_table.login-pvt-rt.id
+}
