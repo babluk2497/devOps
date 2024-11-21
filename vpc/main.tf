@@ -18,3 +18,15 @@ resource "aws_subnet" "login-fe-sn" {
     Name = "login-frontend-subnet"
   }
 }
+
+# Backend Subnet
+resource "aws_subnet" "login-be-sn" {
+  vpc_id     = aws_vpc.login-vpc.id
+  cidr_block = "10.0.1.0/24"
+  availability_zone = "us-west-2b"
+  map_public_ip_on_launch = "true"
+
+  tags = {
+    Name = "login-backend-subnet"
+  }
+}
