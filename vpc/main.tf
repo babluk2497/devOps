@@ -9,7 +9,7 @@ resource "aws_vpc" "login-vpc" {
 
 # Frontend Subnet
 resource "aws_subnet" "login-fe-sn" {
-  vpc_id     = aws_vpc.main.id
+  vpc_id     = aws_vpc.login-vpc.id
   cidr_block = "10.0.0.0/24"
 
   tags = {
