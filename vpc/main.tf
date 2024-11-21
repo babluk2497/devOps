@@ -65,3 +65,12 @@ resource "aws_route_table" "login-pub-rt" {
     Name = "login-public-rt"
   }
 }
+
+# Private Route Table
+resource "aws_route_table" "login-pvt-rt" {
+  vpc_id = aws_vpc.login-vpc.id
+
+  tags = {
+    Name = "login-private-rt"
+  }
+}
