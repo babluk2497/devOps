@@ -74,3 +74,9 @@ resource "aws_route_table" "login-pvt-rt" {
     Name = "login-private-rt"
   }
 }
+
+# Public Route Table Association
+resource "aws_route_table_association" "login-fe-asc" {
+  subnet_id      = aws_subnet.login-fe-sn.id
+  route_table_id = aws_route_table.login-pub-rt.id
+}
