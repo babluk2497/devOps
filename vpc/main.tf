@@ -167,7 +167,7 @@ resource "aws_security_group" "login-be-sg" {
   }
 }
 
-# Frontend SSH Rule
+# Backend SSH Rule
 resource "aws_vpc_security_group_ingress_rule" "login-be-sg-ing-ssh" {
   security_group_id = aws_security_group.login-be-sg.id
   cidr_ipv4         = "0.0.0.0/0"
@@ -176,7 +176,7 @@ resource "aws_vpc_security_group_ingress_rule" "login-be-sg-ing-ssh" {
   to_port           = 22
 }
 
-# Frontend HTTP Rule
+# Backend HTTP Rule
 resource "aws_vpc_security_group_ingress_rule" "login-be-sg-ing-http" {
   security_group_id = aws_security_group.login-be-sg.id
   cidr_ipv4         = "0.0.0.0/0"
@@ -185,9 +185,45 @@ resource "aws_vpc_security_group_ingress_rule" "login-be-sg-ing-http" {
   to_port           = 8080
 }
 
-# Frontend Outbound
+# Backend Outbound
 resource "aws_vpc_security_group_egress_rule" "login-be-sg-egg-all" {
   security_group_id = aws_security_group.login-be-sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1" # semantically equivalent to all ports
+}
+
+# Database Security Group
+resource "aws_security_group" "login-db-sg" {
+  name        = "Login DB SG"
+  description = "Allow Database traffic"
+  vpc_id      = aws_vpc.login-vpc.id
+
+  tags = {
+    Name = "Login-DB-SG"
+  }
+}
+
+# Database SSH Rule
+resource "aws_vpc_security_group_ingress_rule" "login-db-sg-ing-ssh" {
+  security_group_id = aws_security_group.login-db-sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 22
+  ip_protocol       = "tcp"
+  to_port           = 22
+}
+
+# Database POSTGRES Rule
+resource "aws_vpc_security_group_ingress_rule" "login-db-sg-ing-postgres" {
+  security_group_id = aws_security_group.login-db-sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 5432
+  ip_protocol       = "tcp"
+  to_port           = 5432
+}
+
+# Database Outbound
+resource "aws_vpc_security_group_egress_rule" "login-db-sg-egg-all" {
+  security_group_id = aws_security_group.login-db-sg.id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1" # semantically equivalent to all ports
 }
