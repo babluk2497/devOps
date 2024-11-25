@@ -79,7 +79,7 @@ resource "aws_route_table_association" "login-db-asc" {
 
 # NACL
 resource "aws_network_acl" "login-nacl" {
-  vpc_id = aws_vpc.login-vpc.id
+  vpc_id = aws_vpc.vpc.id
 
   egress {
     protocol   = "tcp"
