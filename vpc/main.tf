@@ -1,60 +1,49 @@
 # VPC 
-resource "aws_vpc" "login-vpc" {
-  cidr_block       = "10.0.0.0/16"
+resource "aws_vpc" "vpc" {
+  cidr_block       = var.vpc_cidr
 
   tags = {
-    Name = "login-vpc"
+    Name = var.vpc_name
   }
 }
 
 # Frontend Subnet
-resource "aws_subnet" "login-fe-sn" {
-  vpc_id     = aws_vpc.login-vpc.id
-  cidr_block = "10.0.0.0/24"
+resource "aws_subnet" "public_subnets" {
+  vpc_id     = aws_vpc.vpc.id
+  for_each   = var.public_subnet_cidrs
+  cidr_block = each.value
   availability_zone = "us-west-2a"
   map_public_ip_on_launch = "true"
 
   tags = {
-    Name = "login-frontend-subnet"
-  }
-}
-
-# Backend Subnet
-resource "aws_subnet" "login-be-sn" {
-  vpc_id     = aws_vpc.login-vpc.id
-  cidr_block = "10.0.1.0/24"
-  availability_zone = "us-west-2b"
-  map_public_ip_on_launch = "true"
-
-  tags = {
-    Name = "login-backend-subnet"
+    Name = "${var.vpc_name}-${each.key}-subnet"
   }
 }
 
 # Database Subnet
 resource "aws_subnet" "login-db-sn" {
-  vpc_id     = aws_vpc.login-vpc.id
-  cidr_block = "10.0.2.0/24"
+  vpc_id     = aws_vpc.vpc.id
+  cidr_block = var.private_subnet_cidr
   availability_zone = "us-west-2c"
   map_public_ip_on_launch = "false"
 
   tags = {
-    Name = "login-database-subnet"
+    Name = "${var.vpc_name}-database-subnet"
   }
 }
 
 # Internet Gateway
 resource "aws_internet_gateway" "login-igw" {
-  vpc_id = aws_vpc.login-vpc.id
+  vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "login-internet-gateway"
+    Name = "${var.vpc_name}-internet-gateway"
   }
 }
 
 # Public Route Table
 resource "aws_route_table" "login-pub-rt" {
-  vpc_id = aws_vpc.login-vpc.id
+  vpc_id = aws_vpc.vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -62,28 +51,23 @@ resource "aws_route_table" "login-pub-rt" {
   }
 
   tags = {
-    Name = "login-public-rt"
+    Name = "${var.vpc_name}-public-rt"
   }
 }
 
 # Private Route Table
 resource "aws_route_table" "login-pvt-rt" {
-  vpc_id = aws_vpc.login-vpc.id
+  vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "login-private-rt"
+    Name = "${var.vpc_name}-private-rt"
   }
 }
 
 # Public Route Table Association
 resource "aws_route_table_association" "login-fe-asc" {
-  subnet_id      = aws_subnet.login-fe-sn.id
-  route_table_id = aws_route_table.login-pub-rt.id
-}
-
-# Public Route Table Association
-resource "aws_route_table_association" "login-be-asc" {
-  subnet_id      = aws_subnet.login-be-sn.id
+  for_each       = var.public_subnet_cidrs
+  subnet_id      = aws_subnet.public_subnets[each.key].id
   route_table_id = aws_route_table.login-pub-rt.id
 }
 
@@ -116,7 +100,7 @@ resource "aws_network_acl" "login-nacl" {
   }
 
   tags = {
-    Name = "login-nacl"
+    Name = "${var.vpc_name}-nacl"
   }
 }
 
@@ -124,106 +108,79 @@ resource "aws_network_acl" "login-nacl" {
 resource "aws_security_group" "login-fe-sg" {
   name        = "Login FE SG"
   description = "Allow Frontend traffic"
-  vpc_id      = aws_vpc.login-vpc.id
+  vpc_id      = aws_vpc.vpc.id
 
   tags = {
-    Name = "Login-FE-SG"
+    Name = "${var.vpc_name}-FE-SG"
   }
 }
 
-# Frontend SSH Rule
-resource "aws_vpc_security_group_ingress_rule" "login-fe-sg-ing-ssh" {
+# Frontend Rules
+resource "aws_vpc_security_group_ingress_rule" "login_web_ingress" {
+  count             = length(var.web_ingress_ports)
   security_group_id = aws_security_group.login-fe-sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 22
+  cidr_ipv4         = var.web_ingress_ports[count.index].cidr
+  from_port         = var.web_ingress_ports[count.index].ports
   ip_protocol       = "tcp"
-  to_port           = 22
-}
-
-# Frontend HTTP Rule
-resource "aws_vpc_security_group_ingress_rule" "login-fe-sg-ing-http" {
-  security_group_id = aws_security_group.login-fe-sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 80
-  ip_protocol       = "tcp"
-  to_port           = 80
-}
-
-# Frontend Outbound
-resource "aws_vpc_security_group_egress_rule" "login-fe-sg-egg-all" {
-  security_group_id = aws_security_group.login-fe-sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1" # semantically equivalent to all ports
+  to_port           = var.web_ingress_ports[count.index].ports
 }
 
 # Backend Security Group
 resource "aws_security_group" "login-be-sg" {
   name        = "Login BE SG"
   description = "Allow Backend traffic"
-  vpc_id      = aws_vpc.login-vpc.id
+  vpc_id      = aws_vpc.vpc.id
 
   tags = {
-    Name = "Login-BE-SG"
+    Name = "${var.vpc_name}-BE-SG"
   }
 }
 
-# Backend SSH Rule
-resource "aws_vpc_security_group_ingress_rule" "login-be-sg-ing-ssh" {
+# Backend Rule
+resource "aws_vpc_security_group_ingress_rule" "login_app_ingress" {
+  count             = length(var.app_ingress_ports)
   security_group_id = aws_security_group.login-be-sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 22
+  cidr_ipv4         = var.app_ingress_ports[count.index].cidr
+  from_port         = var.app_ingress_ports[count.index].ports
   ip_protocol       = "tcp"
-  to_port           = 22
-}
-
-# Backend HTTP Rule
-resource "aws_vpc_security_group_ingress_rule" "login-be-sg-ing-http" {
-  security_group_id = aws_security_group.login-be-sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 8080
-  ip_protocol       = "tcp"
-  to_port           = 8080
-}
-
-# Backend Outbound
-resource "aws_vpc_security_group_egress_rule" "login-be-sg-egg-all" {
-  security_group_id = aws_security_group.login-be-sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1" # semantically equivalent to all ports
+  to_port           = var.app_ingress_ports[count.index].ports
 }
 
 # Database Security Group
 resource "aws_security_group" "login-db-sg" {
   name        = "Login DB SG"
   description = "Allow Database traffic"
-  vpc_id      = aws_vpc.login-vpc.id
+  vpc_id      = aws_vpc.vpc.id
 
   tags = {
-    Name = "Login-DB-SG"
+    Name = "${var.vpc_name}-DB-SG"
   }
 }
 
-# Database SSH Rule
-resource "aws_vpc_security_group_ingress_rule" "login-db-sg-ing-ssh" {
+# Database Rules
+resource "aws_vpc_security_group_ingress_rule" "login_db_ingress" {
+  count             = length(var.db_ingress_ports)
   security_group_id = aws_security_group.login-db-sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 22
+  cidr_ipv4         = var.db_ingress_ports[count.index].cidr
+  from_port         = var.db_ingress_ports[count.index].ports
   ip_protocol       = "tcp"
-  to_port           = 22
+  to_port           = var.db_ingress_ports[count.index].ports
 }
 
-# Database POSTGRES Rule
-resource "aws_vpc_security_group_ingress_rule" "login-db-sg-ing-postgres" {
-  security_group_id = aws_security_group.login-db-sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 5432
-  ip_protocol       = "tcp"
-  to_port           = 5432
+
+locals {
+  security_groups = {
+    "web" = aws_security_group.login_web_sg.id
+    "app" = aws_security_group.login_app_sg.id
+    "db"  = aws_security_group.login_db_sg.id
+  }
 }
 
-# Database Outbound
-resource "aws_vpc_security_group_egress_rule" "login-db-sg-egg-all" {
-  security_group_id = aws_security_group.login-db-sg.id
-  cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1" # semantically equivalent to all ports
+resource "aws_vpc_security_group_egress_rule" "common_egress" {
+  for_each    = local.security_groups
+  security_group_id = each.value
+  cidr_ipv4   = var.common_egress_rule.cidr_ipv4
+  from_port   = var.common_egress_rule.from_port
+  ip_protocol = var.common_egress_rule.ip_protocol
+  to_port     = var.common_egress_rule.to_port
 }
