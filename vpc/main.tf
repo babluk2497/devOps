@@ -170,9 +170,9 @@ resource "aws_vpc_security_group_ingress_rule" "login_db_ingress" {
 
 locals {
   security_groups = {
-    "web" = aws_security_group.login_web_sg.id
-    "app" = aws_security_group.login_app_sg.id
-    "db"  = aws_security_group.login_db_sg.id
+    "web" = aws_security_group.login-fe-sg.id
+    "app" = aws_security_group.login-be-sg.id
+    "db"  = aws_security_group.login-db-sg.id
   }
 }
 
