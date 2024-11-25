@@ -120,9 +120,9 @@ resource "aws_vpc_security_group_ingress_rule" "login_web_ingress" {
   count             = length(var.web_ingress_ports)
   security_group_id = aws_security_group.login-fe-sg.id
   cidr_ipv4         = var.web_ingress_ports[count.index].cidr
-  from_port         = var.web_ingress_ports[count.index].ports
+  from_port         = var.web_ingress_ports[count.index].port
   ip_protocol       = "tcp"
-  to_port           = var.web_ingress_ports[count.index].ports
+  to_port           = var.web_ingress_ports[count.index].port
 }
 
 # Backend Security Group
@@ -141,9 +141,9 @@ resource "aws_vpc_security_group_ingress_rule" "login_app_ingress" {
   count             = length(var.app_ingress_ports)
   security_group_id = aws_security_group.login-be-sg.id
   cidr_ipv4         = var.app_ingress_ports[count.index].cidr
-  from_port         = var.app_ingress_ports[count.index].ports
+  from_port         = var.app_ingress_ports[count.index].port
   ip_protocol       = "tcp"
-  to_port           = var.app_ingress_ports[count.index].ports
+  to_port           = var.app_ingress_ports[count.index].port
 }
 
 # Database Security Group
@@ -162,9 +162,9 @@ resource "aws_vpc_security_group_ingress_rule" "login_db_ingress" {
   count             = length(var.db_ingress_ports)
   security_group_id = aws_security_group.login-db-sg.id
   cidr_ipv4         = var.db_ingress_ports[count.index].cidr
-  from_port         = var.db_ingress_ports[count.index].ports
+  from_port         = var.db_ingress_ports[count.index].port
   ip_protocol       = "tcp"
-  to_port           = var.db_ingress_ports[count.index].ports
+  to_port           = var.db_ingress_ports[count.index].port
 }
 
 
