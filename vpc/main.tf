@@ -1,4 +1,4 @@
-#VPC
+#VPC creation
 resource "aws_vpc" "login-vpc" {
   cidr_block       = "10.0.0.0/16"
 
