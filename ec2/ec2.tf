@@ -5,6 +5,7 @@ resource "aws_instance" "login-web" {
   key_name      = "2429"
   subnet_id     = aws_subnet.public_subnets.id
   vpc_security_group_ids = [aws_security_group.login-fe-sg.id]
+  user_data     = file("login.sh")
 
   tags = {
     Name = "${var.vpc_name}-web-server"
