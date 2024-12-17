@@ -1,0 +1,40 @@
+# - Comments
+
+# We use Kay Value to reperent data
+# key colon space value
+key: value
+name: ravi
+age: 30
+city: hyderabad
+
+# Incorrect format for key value
+name:ravi
+age :  30
+
+# Dictionary / Map
+person:
+  name: ravi
+  age: 30
+  city: hyderabad
+
+# Incorrect format for dictionary
+person:
+name: ravi
+age: 30
+city: hyderabad
+
+
+# List/Arrays for multiple elements
+hobbies: # List
+  - cycling
+  - swimming
+  - cooking
+
+persons: # Dictionary
+  name: ravi
+  age: 30
+  city: hyderabad
+  hobbies: # List
+    - cycling
+    - swimming
+    - cooking
